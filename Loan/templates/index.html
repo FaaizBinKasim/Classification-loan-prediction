@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Approval Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Fallback style if CSS fails to load */
+        body { font-family: Inter, system-ui, Arial, sans-serif; background: #0f172a; color: #e2e8f0; }
+    </style>
+    <script>
+        function setDefaultNumber(id, defaultValue) {
+            const el = document.getElementById(id);
+            if (el && (el.value === '' || isNaN(el.value))) {
+                el.value = defaultValue;
+            }
+        }
+    </script>
+    
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#0ea5e9">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Loan Approval Prediction</h1>
+            <p>Enter applicant details to predict approval status.</p>
+        </header>
+
+        {% if prediction %}
+        <div class="prediction {% if 'Approved' in prediction %}approved{% elif 'Rejected' in prediction %}rejected{% else %}error{% endif %}">
+            {{ prediction }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('predict') }}" method="post" class="form-grid">
+            <div class="field">
+                <label for="Gender">Gender</label>
+                <select name="Gender" id="Gender" required>
+                    <option value="" disabled {% if not last_input %}selected{% endif %}>Select</option>
+                    <option value="Male" {% if last_input and last_input.Gender=='Male' %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if last_input and last_input.Gender=='Female' %}selected{% endif %}>Female</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="Married">Married</label>
+                <select name="Married" id="Married" required>
+                    <option value="" disabled {% if not last_input %}selected{% endif %}>Select</option>
+                    <option value="Yes" {% if last_input and last_input.Married=='Yes' %}selected{% endif %}>Yes</option>
+                    <option value="No" {% if last_input and last_input.Married=='No' %}selected{% endif %}>No</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="Dependents">Dependents</label>
+                <select name="Dependents" id="Dependents" required>
+                    <option value="" disabled {% if not last_input %}selected{% endif %}>Select</option>
+                    <option value="0" {% if last_input and last_input.Dependents=='0' %}selected{% endif %}>0</option>
+                    <option value="1" {% if last_input and last_input.Dependents=='1' %}selected{% endif %}>1</option>
+                    <option value="2" {% if last_input and last_input.Dependents=='2' %}selected{% endif %}>2</option>
+                    <option value="3+" {% if last_input and (last_input.Dependents=='3+' or last_input.Dependents=='3') %}selected{% endif %}>3+</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="Education">Education</label>
+                <select name="Education" id="Education" required>
+                    <option value="" disabled {% if not last_input %}selected{% endif %}>Select</option>
+                    <option value="Graduate" {% if last_input and last_input.Education=='Graduate' %}selected{% endif %}>Graduate</option>
+                    <option value="Not Graduate" {% if last_input and last_input.Education=='Not Graduate' %}selected{% endif %}>Not Graduate</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="Self_Employed">Self Employed</label>
+                <select name="Self_Employed" id="Self_Employed" required>
+                    <option value="" disabled {% if not last_input %}selected{% endif %}>Select</option>
+                    <option value="Yes" {% if last_input and last_input.Self_Employed=='Yes' %}selected{% endif %}>Yes</option>
+                    <option value="No" {% if last_input and last_input.Self_Employed=='No' %}selected{% endif %}>No</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="ApplicantIncome">Applicant Income</label>
+                <input type="number" step="0.01" id="ApplicantIncome" name="ApplicantIncome" placeholder="e.g., 5000" value="{% if last_input %}{{ last_input.ApplicantIncome }}{% endif %}" required onblur="setDefaultNumber('ApplicantIncome', 0)">
+            </div>
+
+            <div class="field">
+                <label for="CoapplicantIncome">Coapplicant Income</label>
+                <input type="number" step="0.01" id="CoapplicantIncome" name="CoapplicantIncome" placeholder="e.g., 2000" value="{% if last_input %}{{ last_input.CoapplicantIncome }}{% endif %}" required onblur="setDefaultNumber('CoapplicantIncome', 0)">
+            </div>
+
+            <div class="field">
+                <label for="LoanAmount">Loan Amount</label>
+                <input type="number" step="0.01" id="LoanAmount" name="LoanAmount" placeholder="e.g., 120" value="{% if last_input %}{{ last_input.LoanAmount }}{% endif %}" required onblur="setDefaultNumber('LoanAmount', 0)">
+            </div>
+
+            <div class="field">
+                <label for="Loan_Amount_Term">Loan Amount Term (days)</label>
+                <input type="number" step="1" id="Loan_Amount_Term" name="Loan_Amount_Term" placeholder="e.g., 360" value="{% if last_input %}{{ last_input.Loan_Amount_Term }}{% endif %}" required onblur="setDefaultNumber('Loan_Amount_Term', 360)">
+            </div>
+
+            <div class="field">
+                <label for="Credit_History">Credit History</label>
+                <select name="Credit_History" id="Credit_History" required>
+                    <option value="" disabled {% if not last_input %}selected{% endif %}>Select</option>
+                    <option value="1" {% if last_input and (last_input.Credit_History==1 or last_input.Credit_History=='1') %}selected{% endif %}>1 (Good)</option>
+                    <option value="0" {% if last_input and (last_input.Credit_History==0 or last_input.Credit_History=='0') %}selected{% endif %}>0 (No/Bad)</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="Property_Area">Property Area</label>
+                <select name="Property_Area" id="Property_Area" required>
+                    <option value="" disabled {% if not last_input %}selected{% endif %}>Select</option>
+                    <option value="Urban" {% if last_input and last_input.Property_Area=='Urban' %}selected{% endif %}>Urban</option>
+                    <option value="Semiurban" {% if last_input and last_input.Property_Area=='Semiurban' %}selected{% endif %}>Semiurban</option>
+                    <option value="Rural" {% if last_input and last_input.Property_Area=='Rural' %}selected{% endif %}>Rural</option>
+                </select>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn">Predict</button>
+                <a class="btn secondary" href="/">Clear</a>
+            </div>
+        </form>
+
+        <footer class="footer">
+            <small>Model: loan_pipeline.pkl | Flask app</small>
+        </footer>
+    </div>
+</body>
+</html>
+
+
